@@ -42,6 +42,14 @@ export default defineConfig({
 						{ label: 'CLI', slug: 'reference/cli' },
 					],
 				},
+			{
+					label: 'Examples',
+					items: [
+						{ label: 'AI API Reseller', slug: 'examples/ai-api-reseller' },
+						{ label: 'Video Streaming Paywall', slug: 'examples/video-streaming-paywall' },
+						{ label: 'Multi-Upstream Gateway', slug: 'examples/multi-upstream-gateway' },
+					],
+				},
 			],
 			components: {
 				SiteTitle: './src/components/SiteTitle.astro',
