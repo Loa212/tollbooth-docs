@@ -66,7 +66,7 @@ routes:
   # Expensive AI — priced by model
   "POST /v1/chat/completions":
     upstream: ai
-    type: openai-compatible
+    type: token-based
     models:
       gpt-4o: "$0.05"
       gpt-4o-mini: "$0.005"
@@ -77,7 +77,7 @@ routes:
 
 - **Three upstreams** — weather, geocoding, and AI — each with their own base URL and auth headers.
 - **Path-based routing** sends requests to the right backend based on the public URL path.
-- **Independent pricing** — weather is cheap ($0.005), geocoding is mid-tier ($0.01), AI uses per-model pricing via `type: openai-compatible`.
+- **Independent pricing** — weather is cheap ($0.005), geocoding is mid-tier ($0.01), AI uses per-model pricing via `type: token-based`.
 - **Path rewriting** — each route maps the public-facing path to the upstream's actual API format.
 - **One wallet** collects payments from all routes.
 

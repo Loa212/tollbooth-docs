@@ -70,7 +70,7 @@ routes:
 
 ## Option B: Token-based pricing
 
-Charge based on actual token usage. Set `type: openai-compatible` and tollbooth reads the `model` field from the request body automatically — no match rules needed.
+Charge based on actual token usage. Set `type: token-based` and tollbooth reads the `model` field from the request body automatically — no match rules needed.
 
 ```yaml
 # tollbooth.config.yaml
@@ -97,7 +97,7 @@ routes:
   "POST /v1/messages":
     upstream: anthropic
     path: "/v1/messages"
-    type: openai-compatible
+    type: token-based
     models:
       claude-haiku-4-5-20251001: "$0.001/1k-tokens"
       claude-sonnet-4-5-20250929: "$0.005/1k-tokens"
@@ -107,7 +107,7 @@ routes:
 
 ### What's going on
 
-- **`type: openai-compatible`** tells tollbooth to extract the `model` from the request body and price by token count.
+- **`type: token-based`** tells tollbooth to extract the `model` from the request body and price by token count. (`openai-compatible` is also accepted as an alias.)
 - **`models` map** sets per-model token rates — you control the markup per 1k tokens.
 - **Fallback** applies a default token rate for any model not explicitly listed.
 - No match rules required — the gateway handles model detection automatically.
