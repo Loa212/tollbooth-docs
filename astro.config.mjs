@@ -10,6 +10,24 @@ export default defineConfig({
 		starlight({
 			title: 'tollbooth',
 			favicon: '/favicon.svg',
+			head: [
+				{
+					tag: 'meta',
+					attrs: { property: 'og:image', content: 'https://docs.tollbooth.loa212.com/og-image.png' },
+				},
+				{
+					tag: 'meta',
+					attrs: { property: 'og:site_name', content: 'tollbooth docs' },
+				},
+				{
+					tag: 'meta',
+					attrs: { name: 'twitter:card', content: 'summary_large_image' },
+				},
+				{
+					tag: 'meta',
+					attrs: { name: 'twitter:image', content: 'https://docs.tollbooth.loa212.com/og-image.png' },
+				},
+			],
 			editLink: {
 				baseUrl: 'https://github.com/Loa212/tollbooth-docs/edit/main/',
 			},
