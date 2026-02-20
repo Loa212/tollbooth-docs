@@ -16,6 +16,7 @@ keywords:
   - environment variables
   - path parameters
   - path rewriting
+  - token-based
   - OpenAI-compatible
   - pricing format
 ---
@@ -74,7 +75,7 @@ routes:
 
   "POST /v1/chat/completions":
     upstream: openai
-    type: openai-compatible
+    type: token-based
     models:
       gpt-4o: "$0.05"
       gpt-4o-mini: "$0.005"
@@ -279,9 +280,9 @@ routes:
     price: "$0.015"
 ```
 
-### OpenAI-Compatible Routes
+### Token-Based Routes
 
-For proxying OpenAI-compatible APIs (OpenAI, OpenRouter, LiteLLM, Ollama, etc.), set `type: openai-compatible` to enable automatic model-based pricing without writing match rules.
+For proxying OpenAI-compatible APIs (OpenAI, OpenRouter, LiteLLM, Ollama, etc.), set `type: token-based` to enable automatic model-based pricing without writing match rules. `openai-compatible` is also accepted as an alias.
 
 The gateway auto-extracts the `model` field from the JSON request body and prices the request using a built-in table of common models (GPT-4o, Claude, Gemini, Llama, Mistral, DeepSeek, etc.).
 
@@ -297,11 +298,11 @@ upstreams:
 routes:
   "POST /v1/chat/completions":
     upstream: openai
-    type: openai-compatible
+    type: token-based
 
   "POST /v1/completions":
     upstream: openai
-    type: openai-compatible
+    type: token-based
 ```
 
 #### Override or extend model pricing
@@ -312,7 +313,7 @@ Add a `models` map to set custom prices or add models not in the default table:
 routes:
   "POST /v1/chat/completions":
     upstream: openai
-    type: openai-compatible
+    type: token-based
     models:
       gpt-4o: "$0.05"          # override default
       gpt-4o-mini: "$0.005"    # override default
@@ -322,7 +323,7 @@ routes:
 
 #### Price resolution order
 
-When pricing an OpenAI-compatible request, the gateway checks:
+When pricing a token-based request, the gateway checks:
 
 1. `models` (your route overrides) — exact match
 2. Built-in default table — exact match
