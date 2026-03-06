@@ -1,10 +1,13 @@
 ---
-lastUpdated: 2026-02-27
+lastUpdated: 2026-03-06
 title: Settlement Strategies
 description: Understand tollbooth's pluggable settlement system and choose the right strategy for your use case.
 keywords:
   - settlement
   - facilitator
+  - nanopayments
+  - circle
+  - circle gateway
   - self-hosted
   - on-chain
   - custom strategy
@@ -12,6 +15,8 @@ keywords:
   - OpenFacilitator
   - local settlement
   - x402
+  - batched settlement
+  - gas-free
 ---
 
 tollbooth uses a pluggable settlement system to verify and collect payments. By default it delegates to a remote facilitator, but you can swap in a different strategy depending on your needs — from zero-config hosted settlement to fully self-sovereign on-chain verification.
@@ -32,6 +37,40 @@ The facilitator verifies the payer's EIP-712 signature, submits the USDC `transf
 **When to use:** production deployments where you want zero infrastructure overhead. Works out of the box with no wallets, RPC nodes, or gas management.
 
 **Tradeoff:** depends on a third-party service for settlement.
+
+### `nanopayments`
+
+Uses [Circle's Nanopayments Gateway](https://www.circle.com/nanopayments) for gas-free, sub-cent USDC transfers with batched on-chain settlement. Instead of settling each payment individually on-chain, Circle's Gateway batches multiple `TransferWithAuthorization` signatures into periodic settlements — making payments as small as $0.000001 economically viable.
+
+```yaml
+settlement:
+  strategy: nanopayments
+  network: testnet   # "testnet" (default) or "mainnet"
+```
+
+Under the hood, the nanopayments strategy:
+
+1. Clients sign against Circle's `GatewayWalletBatched` EIP-712 domain (instead of the standard per-token domain)
+2. tollbooth forwards the signed payment to Circle Gateway's `/v1/x402/verify` and `/v1/x402/settle` endpoints — the same verify/settle pattern as the facilitator strategy
+3. Circle Gateway batches these authorizations and settles them on-chain periodically
+
+The `verifyingContract` address is automatically discovered from Circle Gateway's `/v1/x402/supported` endpoint at startup and included in 402 responses so clients sign against the correct contract.
+
+**Supported networks:** Base, Ethereum, Arbitrum, Optimism, Polygon, Avalanche (mainnets and testnets).
+
+**When to use:** high-frequency micropayment use cases like AI agent billing, per-request API pricing, or any scenario where individual on-chain settlement per request would be too expensive. Ideal for sub-cent payments.
+
+**Tradeoff:** settlement is batched and asynchronous — funds don't arrive instantly on-chain like with the facilitator. Depends on Circle's Gateway infrastructure.
+
+You can also point to a custom Circle Gateway URL instead of the built-in testnet/mainnet URLs:
+
+```yaml
+settlement:
+  strategy: nanopayments
+  url: https://my-gateway.example.com
+```
+
+For more details on Circle Nanopayments, see the [Circle Nanopayments documentation](https://www.circle.com/nanopayments).
 
 ## Self-hosting options
 
@@ -105,10 +144,11 @@ export default myStrategy;
 
 ## Comparison
 
-| Strategy | Infra needed | Speed | Decentralization | Use case |
+| Strategy | Infra needed | Speed | Settlement | Use case |
 |---|---|---|---|---|
-| `facilitator` | None | ~200 ms | Depends on facilitator | Production default |
-| `local` (future) | Gas wallet + RPC | ~2–5 s | Fully self-sovereign | Production, no dependencies |
+| `facilitator` | None | ~200 ms | Immediate on-chain | Production default |
+| `nanopayments` | None | ~200 ms | Batched (async) | Sub-cent micropayments, AI agents |
+| `local` (future) | Gas wallet + RPC | ~2–5 s | Immediate on-chain | Full self-sovereignty |
 | Custom | Varies | Varies | Varies | Free tiers, subscriptions, hybrid |
 
 ## Settlement timing
