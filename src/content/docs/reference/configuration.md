@@ -1,5 +1,5 @@
 ---
-lastUpdated: 2026-02-27
+lastUpdated: 2026-03-06
 title: Configuration Reference
 description: Complete reference for tollbooth.config.yaml — every field, type, default, and example.
 keywords:
@@ -207,6 +207,58 @@ facilitator: https://custom-facilitator.example.com
 ```
 
 Can be overridden per-route. Route-level `facilitator` takes precedence over this top-level setting. If neither is specified, defaults to `https://x402.org/facilitator`.
+
+---
+
+## `settlement`
+
+Configures the settlement strategy used to verify and collect payments. When omitted, tollbooth uses the `facilitator` strategy by default.
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `strategy` | `"facilitator" \| "nanopayments" \| "custom"` | `"facilitator"` | Which settlement strategy to use |
+| `network` | `"testnet" \| "mainnet"` | `"testnet"` | Circle Gateway environment (nanopayments only) |
+| `url` | `string` | — | Custom gateway URL override (nanopayments only) |
+| `module` | `string` | — | Path to a custom strategy module (custom only) |
+
+### Facilitator (default)
+
+```yaml
+# No settlement block needed — facilitator is the default.
+# Equivalent to:
+settlement:
+  strategy: facilitator
+```
+
+### Nanopayments
+
+Uses [Circle's Nanopayments Gateway](https://www.circle.com/nanopayments) for gas-free, batched USDC settlement. Ideal for sub-cent micropayments and high-frequency use cases.
+
+```yaml
+settlement:
+  strategy: nanopayments
+  network: testnet   # "testnet" (default) or "mainnet"
+```
+
+Or with a custom gateway URL:
+
+```yaml
+settlement:
+  strategy: nanopayments
+  url: https://my-gateway.example.com
+```
+
+### Custom
+
+Point to your own `SettlementStrategy` implementation:
+
+```yaml
+settlement:
+  strategy: custom
+  module: "./settlement/my-strategy.ts"
+```
+
+See [Settlement Strategies](/how-it-works/settlement/) for details on each strategy.
 
 ---
 
