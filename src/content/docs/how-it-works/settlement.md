@@ -6,6 +6,10 @@ keywords:
   - settlement
   - facilitator
   - nanopayments
+  - mpp
+  - machine payments protocol
+  - stripe
+  - tempo
   - circle
   - circle gateway
   - self-hosted
@@ -71,6 +75,27 @@ settlement:
 ```
 
 For more details on Circle Nanopayments, see the [Circle Nanopayments documentation](https://www.circle.com/nanopayments).
+
+### `mpp`
+
+Uses the [Machine Payments Protocol](https://mpp.dev) to support multiple payment methods through a single gateway — stablecoins via the tempo method and fiat card payments via Stripe. MPP is backwards-compatible with x402 and on the IETF standardization track.
+
+```yaml
+settlement:
+  strategy: mpp
+  methods:
+    - type: tempo        # stablecoins via x402 facilitator
+    - type: stripe       # fiat card payments
+      secretKey: "${STRIPE_SECRET_KEY}"
+```
+
+When using the `mpp` strategy, tollbooth advertises payment options via standard `WWW-Authenticate: Payment` headers alongside `payment-required`, and accepts credentials via `Authorization: Payment` alongside `payment-signature`. This means both x402 and MPP clients work seamlessly.
+
+**When to use:** you want to accept fiat card payments alongside stablecoins, or need compatibility with MPP-native agents.
+
+**Tradeoff:** Stripe method requires a Stripe account. Tempo method has the same tradeoffs as the facilitator strategy.
+
+For the full MPP guide, see [MPP (Machine Payments Protocol)](/how-it-works/mpp/).
 
 ## Self-hosting options
 
@@ -148,6 +173,7 @@ export default myStrategy;
 |---|---|---|---|---|
 | `facilitator` | None | ~200 ms | Immediate on-chain | Production default |
 | `nanopayments` | None | ~200 ms | Batched (async) | Sub-cent micropayments, AI agents |
+| `mpp` | Stripe account (optional) | ~200 ms | Immediate | Universal agent payments (stablecoins + fiat) |
 | `local` (future) | Gas wallet + RPC | ~2–5 s | Immediate on-chain | Full self-sovereignty |
 | Custom | Varies | Varies | Varies | Free tiers, subscriptions, hybrid |
 
